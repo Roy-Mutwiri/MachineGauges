@@ -25,6 +25,9 @@
 - Video memory totals now come from the GPU driver for every vendor, not just NVIDIA.
 - The tray menu is shorter: detailed options moved into Settings.
 
+### Fixed
+- MachineGauges could fail to start with Windows if its startup entry went missing, for example after a registry cleaner ran or when it was installed from inside another sandboxed app. It now restores its startup entry, its Installed apps entry and its Start Menu shortcut whenever it opens. If you switched "Start with Windows" off, it stays off.
+
 ## [1.3.0] - 2026-09-17
 
 ### New
