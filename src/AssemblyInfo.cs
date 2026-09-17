@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.InteropServices;
 
 // Shown by Windows in Settings > Apps > Startup, Task Manager and file properties.
@@ -7,6 +7,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("MachineGauges")]
 [assembly: AssemblyProduct("MachineGauges")]
 [assembly: AssemblyCopyright("")]
-[assembly: AssemblyVersion("1.3.0.0")]
-[assembly: AssemblyFileVersion("1.3.0.0")]
+[assembly: AssemblyVersion("1.4.0.0")]
+[assembly: AssemblyFileVersion("1.4.0.0")]
 [assembly: ComVisible(false)]

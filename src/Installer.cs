@@ -20,6 +20,17 @@ namespace MachineGauges
         public const string ProjectUrl = "https://github.com/Roy-Mutwiri/MachineGauges";
         public const string MutexName = @"Local\MachineGauges_SingleInstance";
         public const string QuitEventName = @"Local\MachineGauges_Quit";
+        public const string ShowDetailsEventName = @"Local\MachineGauges_ShowDetails";
+        public const string ShowSettingsEventName = @"Local\MachineGauges_ShowSettings";
+
+        /// <summary>Asks the running copy to open a window. Returns false if nothing is listening.</summary>
+        public static bool SignalRunning(string eventName)
+        {
+            EventWaitHandle ev;
+            if (!EventWaitHandle.TryOpenExisting(eventName, out ev)) return false;
+            using (ev) ev.Set();
+            return true;
+        }
 
         private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
         private const string ApprovedKey = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
@@ -92,8 +103,8 @@ namespace MachineGauges
 
             if (installed != null && installed >= current)
             {
-                if (IsRunning()) ShowAlreadyRunning();
-                else Launch(InstalledExe, "");
+                if (!IsRunning()) Launch(InstalledExe, "");
+                else if (!SignalRunning(ShowDetailsEventName)) ShowAlreadyRunning();
                 return true;
             }
 
