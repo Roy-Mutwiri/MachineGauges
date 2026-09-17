@@ -32,6 +32,7 @@ namespace MachineGauges
         // Behaviour
         public int IntervalMs = 1000;
         public bool HoverHide = true;
+        public bool StartupOff = false;         // the user turned "Start with Windows" off
         public string Visibility = "Always";
         public string Hotkey = "Ctrl+Shift+G";
         public string PingHost = "1.1.1.1";
@@ -123,6 +124,7 @@ namespace MachineGauges
                 case "gpu": Gpu = val; break;
                 case "interval": IntervalMs = I(val, IntervalMs, 250, 10000); break;
                 case "hoverhide": HoverHide = B(val); break;
+                case "startupoff": StartupOff = B(val); break;
                 case "visibility": Visibility = Pick(val, VisibilityModes, Visibility); break;
                 case "hotkey": Hotkey = val; break;
                 case "pinghost": PingHost = val; break;
@@ -164,6 +166,7 @@ namespace MachineGauges
                     "gpu=" + Gpu,
                     "interval=" + IntervalMs.ToString(ic),
                     "hoverhide=" + Bit(HoverHide),
+                    "startupoff=" + Bit(StartupOff),
                     "visibility=" + Visibility,
                     "hotkey=" + Hotkey,
                     "pinghost=" + PingHost,

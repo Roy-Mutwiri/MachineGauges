@@ -166,7 +166,10 @@ namespace MachineGauges
                     Application.ThreadException += (s, e) => DiagLog.Write("ui error: " + e.Exception);
                     AppDomain.CurrentDomain.UnhandledException += (s, e) => DiagLog.Write("fatal: " + e.ExceptionObject);
 
-                    using (var form = new OverlayForm(Config.Load(), BaseMhz(), true))
+                    Config cfg = Config.Load();
+                    if (Installer.IsRunningInstalledCopy()) Installer.RepairRegistration(cfg.StartupOff);
+
+                    using (var form = new OverlayForm(cfg, BaseMhz(), true))
                     {
                         var waits = new List<RegisteredWaitHandle>
                         {

@@ -103,6 +103,7 @@ namespace MachineGauges
 
             if (installed != null && installed >= current)
             {
+                RepairRegistration(Config.Load().StartupOff);
                 if (!IsRunning()) Launch(InstalledExe, "");
                 else if (!SignalRunning(ShowDetailsEventName)) ShowAlreadyRunning();
                 return true;
@@ -275,6 +276,47 @@ namespace MachineGauges
             catch { }
             TryDeleteDirectory(legacyConfigDir);
             TryDeleteDirectory(Path.Combine(LocalAppData, @"Programs\PerfOverlay"));
+        }
+
+        /// <summary>
+        /// Restores the startup entry, the Settings > Apps entry and the Start Menu shortcut if they have
+        /// gone missing: registry cleaners remove them, and an install run from inside a sandboxed
+        /// (packaged) app writes them to that app's private registry, where Windows never looks.
+        /// A user who turned "Start with Windows" off keeps it off.
+        /// </summary>
+        public static void RepairRegistration(bool startupOff)
+        {
+            if (!File.Exists(InstalledExe)) return;
+            try
+            {
+                string expected = "\"" + InstalledExe + "\" --autostart";
+                string current;
+                using (RegistryKey run = Registry.CurrentUser.OpenSubKey(RunKey, false))
+                    current = run == null ? null : run.GetValue(ValueName) as string;
+                if (!startupOff && !string.Equals(current, expected, StringComparison.OrdinalIgnoreCase))
+                {
+                    SetStartup(true, InstalledExe);
+                    DiagLog.Write("repair: startup entry " + (current == null ? "restored" : "corrected"));
+                }
+
+                bool listed;
+                using (RegistryKey k = Registry.CurrentUser.OpenSubKey(UninstallKey, false)) listed = k != null;
+                if (!listed)
+                {
+                    RegisterUninstallEntry();
+                    DiagLog.Write("repair: Settings > Apps entry restored");
+                }
+
+                if (!File.Exists(ShortcutPath))
+                {
+                    CreateShortcut();
+                    DiagLog.Write("repair: Start Menu shortcut restored");
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagLog.Write("repair failed: " + ex.Message);
+            }
         }
 
         // ---------- startup ----------

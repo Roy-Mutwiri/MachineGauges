@@ -356,6 +356,7 @@ namespace MachineGauges
 
             if (_startup.Checked != Installer.IsStartupEnabled())
                 Installer.SetStartup(_startup.Checked, Installer.CurrentExe);
+            c.StartupOff = !_startup.Checked;
 
             _host.ApplyConfig(c);
             RefreshStatus();

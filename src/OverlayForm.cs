@@ -1125,7 +1125,11 @@ namespace MachineGauges
             var startup = new ToolStripMenuItem("Start with Windows");
             startup.Click += delegate
             {
-                Installer.SetStartup(!Installer.IsStartupEnabled(), Installer.CurrentExe);
+                bool enable = !Installer.IsStartupEnabled();
+                Installer.SetStartup(enable, Installer.CurrentExe);
+                Config c = _cfg.Clone();
+                c.StartupOff = !enable;
+                ApplyConfig(c);
                 startup.Checked = Installer.IsStartupEnabled();
             };
             menu.Items.Add(startup);
