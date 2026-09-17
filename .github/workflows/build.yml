@@ -1,0 +1,98 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        shell: pwsh
+        run: ./build.ps1
+
+      - name: Smoke test
+        shell: pwsh
+        run: |
+          $exe = Resolve-Path build/MachineGauges.exe
+          # Reads every counter three times and writes a report; fails the build if it crashes.
+          $p = Start-Process $exe -ArgumentList '--probe', '3' -PassThru
+          if (-not $p.WaitForExit(60000)) { $p.Kill(); throw 'Probe timed out' }
+          if ($p.ExitCode -ne 0) { throw "Probe exited with $($p.ExitCode)" }
+          $report = Join-Path $env:TEMP 'machinegauges-probe.txt'
+          if (-not (Test-Path $report)) { throw 'Probe produced no report' }
+          Get-Content $report
+          $p = Start-Process $exe -ArgumentList '--preview', 'build/preview.png', 'scale=1' -PassThru
+          if (-not $p.WaitForExit(60000) -or $p.ExitCode -ne 0) { throw 'Preview render failed' }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MachineGauges
+          path: |
+            build/MachineGauges.exe
+            build/preview.png
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: MachineGauges
+          path: dist
+
+      - name: Check version and write release notes
+        shell: pwsh
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $version = $tag.TrimStart('v')
+          $exe = Resolve-Path dist/MachineGauges.exe
+          $fileVersion = (Get-Item $exe).VersionInfo.FileVersion
+          if (-not $fileVersion.StartsWith("$version.")) {
+            throw "Tag $tag doesn't match the exe's version $fileVersion (update src/AssemblyInfo.cs)."
+          }
+
+          # This version's section of CHANGELOG.md
+          $lines = @(Get-Content CHANGELOG.md)
+          $start = -1; $end = $lines.Count
+          for ($i = 0; $i -lt $lines.Count; $i++) {
+            if ($start -lt 0 -and $lines[$i] -match "^## \[?$([regex]::Escape($version))\]?") { $start = $i }
+            elseif ($start -ge 0 -and $lines[$i] -match '^## ') { $end = $i; break }
+          }
+          if ($start -lt 0) { throw "CHANGELOG.md has no section for $version" }
+          $section = $lines[($start + 1)..($end - 1)] -join "`n"
+
+          $hash = (Get-FileHash $exe -Algorithm SHA256).Hash
+          $size = [math]::Round((Get-Item $exe).Length / 1KB)
+          @"
+          $($section.Trim())
+
+          ### Install
+          Download **MachineGauges.exe** below, double-click it and choose **Yes - Install**. No admin rights needed.
+          Already installed? It offers to update itself, or double-click the new download.
+
+          > **"Windows protected your PC"?** The app isn't code-signed yet. Click **More info > Run anyway**.
+
+          ### Checksum
+          ``MachineGauges.exe`` ($size KB), SHA-256: ``$hash``
+          "@ | Set-Content release-notes.md -Encoding utf8
+
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = '${{ github.ref_name }}'
+          gh release create $tag "dist/MachineGauges.exe#MachineGauges.exe (Windows 10/11, 64-bit)" `
+            --title "MachineGauges $($tag.TrimStart('v'))" --notes-file release-notes.md --latest

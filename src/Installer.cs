@@ -20,6 +20,17 @@ namespace MachineGauges
         public const string ProjectUrl = "https://github.com/Roy-Mutwiri/MachineGauges";
         public const string MutexName = @"Local\MachineGauges_SingleInstance";
         public const string QuitEventName = @"Local\MachineGauges_Quit";
+        public const string ShowDetailsEventName = @"Local\MachineGauges_ShowDetails";
+        public const string ShowSettingsEventName = @"Local\MachineGauges_ShowSettings";
+
+        /// <summary>Asks the running copy to open a window. Returns false if nothing is listening.</summary>
+        public static bool SignalRunning(string eventName)
+        {
+            EventWaitHandle ev;
+            if (!EventWaitHandle.TryOpenExisting(eventName, out ev)) return false;
+            using (ev) ev.Set();
+            return true;
+        }
 
         private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
         private const string ApprovedKey = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
@@ -92,8 +103,9 @@ namespace MachineGauges
 
             if (installed != null && installed >= current)
             {
-                if (IsRunning()) ShowAlreadyRunning();
-                else Launch(InstalledExe, "");
+                RepairRegistration(Config.Load().StartupOff);
+                if (!IsRunning()) Launch(InstalledExe, "");
+                else if (!SignalRunning(ShowDetailsEventName)) ShowAlreadyRunning();
                 return true;
             }
 
@@ -264,6 +276,47 @@ namespace MachineGauges
             catch { }
             TryDeleteDirectory(legacyConfigDir);
             TryDeleteDirectory(Path.Combine(LocalAppData, @"Programs\PerfOverlay"));
+        }
+
+        /// <summary>
+        /// Restores the startup entry, the Settings > Apps entry and the Start Menu shortcut if they have
+        /// gone missing: registry cleaners remove them, and an install run from inside a sandboxed
+        /// (packaged) app writes them to that app's private registry, where Windows never looks.
+        /// A user who turned "Start with Windows" off keeps it off.
+        /// </summary>
+        public static void RepairRegistration(bool startupOff)
+        {
+            if (!File.Exists(InstalledExe)) return;
+            try
+            {
+                string expected = "\"" + InstalledExe + "\" --autostart";
+                string current;
+                using (RegistryKey run = Registry.CurrentUser.OpenSubKey(RunKey, false))
+                    current = run == null ? null : run.GetValue(ValueName) as string;
+                if (!startupOff && !string.Equals(current, expected, StringComparison.OrdinalIgnoreCase))
+                {
+                    SetStartup(true, InstalledExe);
+                    DiagLog.Write("repair: startup entry " + (current == null ? "restored" : "corrected"));
+                }
+
+                bool listed;
+                using (RegistryKey k = Registry.CurrentUser.OpenSubKey(UninstallKey, false)) listed = k != null;
+                if (!listed)
+                {
+                    RegisterUninstallEntry();
+                    DiagLog.Write("repair: Settings > Apps entry restored");
+                }
+
+                if (!File.Exists(ShortcutPath))
+                {
+                    CreateShortcut();
+                    DiagLog.Write("repair: Start Menu shortcut restored");
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagLog.Write("repair failed: " + ex.Message);
+            }
         }
 
         // ---------- startup ----------

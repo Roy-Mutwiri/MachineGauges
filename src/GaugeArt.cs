@@ -16,16 +16,44 @@ namespace MachineGauges
         private static readonly Color NeedleColor = Color.FromArgb(236, 239, 244);
         private static readonly Color TickColor = Color.FromArgb(110, 116, 130);
 
-        // Solid green through normal loads; only shifts once a reading is genuinely high.
+        // Steady colour through normal loads; only shifts once a reading is genuinely high.
+        // Every theme ends on the same red so "critical" reads the same whichever is chosen.
         private static readonly double[] StopAt = { 0, 45, 65, 80, 92 };
-        private static readonly Color[] StopColor =
+        private static readonly Color Critical = Color.FromArgb(244, 96, 96);
+        private static Color[] StopColor = ThemeStops("Classic");
+
+        /// <summary>Colour for readings that aren't a load (network, FPS, clock).</summary>
+        public static Color Accent { get; private set; }
+
+        public static void SetTheme(string theme)
         {
-            Color.FromArgb(94, 214, 143),   // green
-            Color.FromArgb(94, 214, 143),   // green
-            Color.FromArgb(240, 202, 96),   // amber
-            Color.FromArgb(246, 158, 74),   // orange
-            Color.FromArgb(244, 96, 96)     // red
-        };
+            StopColor = ThemeStops(theme);
+        }
+
+        private static Color[] ThemeStops(string theme)
+        {
+            Color low, mid, high;
+            switch (theme)
+            {
+                case "Ocean":
+                    low = Color.FromArgb(72, 202, 196); mid = Color.FromArgb(96, 170, 240); high = Color.FromArgb(150, 130, 245);
+                    Accent = Color.FromArgb(120, 220, 210);
+                    break;
+                case "Violet":
+                    low = Color.FromArgb(170, 150, 245); mid = Color.FromArgb(220, 120, 230); high = Color.FromArgb(245, 110, 160);
+                    Accent = Color.FromArgb(190, 160, 250);
+                    break;
+                case "Mono":
+                    low = Color.FromArgb(170, 176, 188); mid = Color.FromArgb(215, 219, 228); high = Color.FromArgb(245, 245, 248);
+                    Accent = Color.FromArgb(200, 205, 215);
+                    break;
+                default:
+                    low = Color.FromArgb(94, 214, 143); mid = Color.FromArgb(240, 202, 96); high = Color.FromArgb(246, 158, 74);
+                    Accent = Color.FromArgb(110, 190, 245);
+                    break;
+            }
+            return new[] { low, low, mid, high, Critical };
+        }
 
         /// <summary>Smooth green -> amber -> orange -> red ramp for a 0-100 load.</summary>
         public static Color LoadColor(double pct)
