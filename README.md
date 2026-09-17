@@ -10,9 +10,10 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Roy-Mutwiri/MachineGauges/releases/latest/download/MachineGauges.exe"><b>⬇ Download MachineGauges.exe</b></a>
+  <a href="https://github.com/Roy-Mutwiri/MachineGauges/releases/latest"><b>⬇ Download the latest release</b></a>
   &nbsp;·&nbsp; Windows 10 / 11 (64-bit) &nbsp;·&nbsp; free, ~200 KB, no admin rights needed
   <br><br>
+  <a href="https://github.com/Roy-Mutwiri/MachineGauges/releases/latest"><img src="https://img.shields.io/github/v/release/Roy-Mutwiri/MachineGauges?label=latest%20release" alt="Latest release"></a>
   <a href="https://github.com/Roy-Mutwiri/MachineGauges/actions/workflows/build.yml"><img src="https://github.com/Roy-Mutwiri/MachineGauges/actions/workflows/build.yml/badge.svg" alt="Build status"></a>
 </p>
 
@@ -20,7 +21,7 @@
 
 ## Install
 
-1. **[Download MachineGauges.exe](https://github.com/Roy-Mutwiri/MachineGauges/releases/latest/download/MachineGauges.exe)**
+1. Open the **[latest release](https://github.com/Roy-Mutwiri/MachineGauges/releases/latest)** and download **MachineGauges.exe** under **Assets**.
 2. Double-click it and choose **Yes – Install**.
 3. The gauges appear at the top centre of your screen and start automatically every time you sign in.
 
