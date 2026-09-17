@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
+PackageIdentifier: RoyMutwiri.MachineGauges
+PackageVersion: 1.4.0
+MinimumOSVersion: 10.0.17763.0
+InstallerType: exe
+Scope: user
+InstallModes:
+- interactive
+- silent
+InstallerSwitches:
+  Silent: --install --quiet
+  SilentWithProgress: --install --quiet
+UpgradeBehavior: install
+ReleaseDate: 2026-09-17
+AppsAndFeaturesEntries:
+- DisplayName: MachineGauges
+  Publisher: MachineGauges
+  ProductCode: MachineGauges
+InstallationMetadata:
+  DefaultInstallLocation: '%LOCALAPPDATA%\Programs\MachineGauges'
+Installers:
+- Architecture: x64
+  InstallerUrl: https://github.com/Roy-Mutwiri/MachineGauges/releases/download/v1.4.0/MachineGauges.exe
+  InstallerSha256: 512D8C5AC854B9C6FF9FC3F4836BF4AF027F648AF7B6DD121680EA2F514C6160
+ManifestType: installer
+ManifestVersion: 1.6.0

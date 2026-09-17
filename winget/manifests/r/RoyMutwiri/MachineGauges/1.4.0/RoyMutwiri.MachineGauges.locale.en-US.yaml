@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+PackageIdentifier: RoyMutwiri.MachineGauges
+PackageVersion: 1.4.0
+PackageLocale: en-US
+Publisher: Roy Mutwiri
+PublisherUrl: https://github.com/Roy-Mutwiri
+PublisherSupportUrl: https://github.com/Roy-Mutwiri/MachineGauges/issues
+PackageName: MachineGauges
+PackageUrl: https://github.com/Roy-Mutwiri/MachineGauges
+License: Freeware
+ShortDescription: Live CPU, RAM, GPU, disk and network gauges pinned to the top of your screen, matching Task Manager.
+Description: |-
+  MachineGauges shows animated gauges for CPU, memory, GPU, disk and network usage in a click-through strip at the top of the screen, using the same performance counters as Task Manager.
+  Press Ctrl+Shift+G for a details panel with history charts, per-core CPU, every GPU and disk, and top processes.
+  Includes alerts, a CSV history log, optional FPS, ping, battery and clock gauges, and automatic updates. No admin rights needed.
+Tags:
+- cpu
+- gpu
+- hardware-monitor
+- overlay
+- performance
+- system-monitor
+- task-manager
+ReleaseNotesUrl: https://github.com/Roy-Mutwiri/MachineGauges/releases/tag/v1.4.0
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0
